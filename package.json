@@ -1,7 +1,7 @@
 ﻿{
   "name": "mensagenssec-api",
   "version": "1.0.0",
-  "description": "Backend de distribuição de chaves e mensagens para MensagensSec",
+  "description": "Backend do MensagensSec",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

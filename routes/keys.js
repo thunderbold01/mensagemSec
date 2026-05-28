@@ -3,12 +3,11 @@ const { pool } = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
-// Upload de pre‑keys (protegido)
 router.post('/upload-prekeys', authenticateToken, async (req, res) => {
-  const { phone } = req.user; // extraído do token
-  const { preKeys } = req.body; // array de { keyId, publicKey }
+  const { phone } = req.user;
+  const { preKeys } = req.body;
   if (!preKeys || !Array.isArray(preKeys)) {
-    return res.status(400).json({ error: 'Formato inválido. Esperado { preKeys: [...] }' });
+    return res.status(400).json({ error: 'Formato inválido.' });
   }
 
   const client = await pool.connect();
@@ -33,7 +32,6 @@ router.post('/upload-prekeys', authenticateToken, async (req, res) => {
   }
 });
 
-// Obter pacote de chaves de um utilizador (chave de identidade + 1 pre‑key)
 router.get('/bundle/:phone', async (req, res) => {
   const { phone } = req.params;
   try {
@@ -45,7 +43,6 @@ router.get('/bundle/:phone', async (req, res) => {
       return res.status(404).json({ error: 'Utilizador não encontrado.' });
     }
 
-    // Buscar uma pre‑key disponível (a mais antiga) e removê-la
     const preKeyResult = await pool.query(
       `DELETE FROM pre_keys
        WHERE user_phone = $1
@@ -55,7 +52,7 @@ router.get('/bundle/:phone', async (req, res) => {
     );
 
     if (preKeyResult.rows.length === 0) {
-      return res.status(503).json({ error: 'Nenhuma pre‑key disponível para este utilizador.' });
+      return res.status(503).json({ error: 'Nenhuma pre‑key disponível.' });
     }
 
     res.json({

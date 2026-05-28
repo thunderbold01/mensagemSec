@@ -3,7 +3,6 @@ const { pool } = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
-// Enviar mensagem (online relay) – autenticado
 router.post('/send', authenticateToken, async (req, res) => {
   const { phone: senderPhone } = req.user;
   const { recipientPhone, ephemeralPublicKey, preKeyId, encryptedBody } = req.body;
@@ -25,7 +24,6 @@ router.post('/send', authenticateToken, async (req, res) => {
   }
 });
 
-// Buscar mensagens pendentes (polling) – autenticado
 router.get('/poll', authenticateToken, async (req, res) => {
   const { phone } = req.user;
   try {
@@ -39,7 +37,6 @@ router.get('/poll', authenticateToken, async (req, res) => {
     );
 
     if (result.rows.length > 0) {
-      // Marcar como entregues
       const ids = result.rows.map(r => r.id);
       await pool.query('UPDATE messages SET delivered = TRUE WHERE id = ANY($1)', [ids]);
     }
