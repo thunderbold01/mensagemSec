@@ -1,10 +1,11 @@
-﻿const express = require('express');
+const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
+// REGISTO
 router.post('/register', async (req, res) => {
   const { phone, name, email, password, identityPublicKey, username, photoUrl } = req.body;
   if (!phone || !name || !email || !password || !identityPublicKey) {
@@ -35,6 +36,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// LOGIN
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -77,6 +79,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// PERFIL (obter)
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
@@ -91,6 +94,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// PERFIL (atualizar)
 router.put('/profile', authenticateToken, async (req, res) => {
   const { name, username, photoUrl } = req.body;
   try {
@@ -119,9 +123,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
-
-// Verificar se número está registado
+// VERIFICAR SE NÚMERO ESTÁ REGISTADO
 router.get('/check/:phone', async (req, res) => {
   const { phone } = req.params;
   try {
@@ -132,3 +134,5 @@ router.get('/check/:phone', async (req, res) => {
     res.status(500).json({ error: 'Erro ao verificar utilizador.' });
   }
 });
+
+module.exports = router;
