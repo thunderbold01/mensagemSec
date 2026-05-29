@@ -120,3 +120,15 @@ router.put('/profile', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+
+// Verificar se número está registado
+router.get('/check/:phone', async (req, res) => {
+  const { phone } = req.params;
+  try {
+    const result = await pool.query('SELECT phone FROM users WHERE phone = $1', [phone]);
+    res.json({ registered: result.rows.length > 0 });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao verificar utilizador.' });
+  }
+});
