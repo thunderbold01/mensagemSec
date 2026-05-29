@@ -1,8 +1,9 @@
-﻿const express = require('express');
+const express = require('express');
 const { pool } = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
+// LISTAR CONTACTOS DO UTILIZADOR
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
@@ -20,6 +21,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// ADICIONAR CONTACTO
 router.post('/add', authenticateToken, async (req, res) => {
   const { contactPhone } = req.body;
   if (!contactPhone) return res.status(400).json({ error: 'Número em falta.' });
@@ -38,6 +40,7 @@ router.post('/add', authenticateToken, async (req, res) => {
   }
 });
 
+// REMOVER CONTACTO
 router.delete('/:phone', authenticateToken, async (req, res) => {
   const { phone } = req.params;
   try {
@@ -49,6 +52,27 @@ router.delete('/:phone', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao remover contacto.' });
+  }
+});
+
+// PESQUISAR UTILIZADORES POR NOME OU TELEFONE
+router.get('/search', authenticateToken, async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: 'Termo de pesquisa em falta.' });
+
+  try {
+    const result = await pool.query(
+      `SELECT phone, name, username, photo_url 
+       FROM users 
+       WHERE (name ILIKE $1 OR phone ILIKE $1 OR username ILIKE $1) 
+       AND phone != $2
+       LIMIT 20`,
+      [`%${q}%`, req.user.phone]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao pesquisar utilizadores.' });
   }
 });
 
