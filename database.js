@@ -1,4 +1,4 @@
-﻿const { Pool } = require('pg');
+const { Pool } = require('pg');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -8,6 +8,7 @@ const pool = new Pool({
 async function initDatabase() {
   const client = await pool.connect();
   try {
+    // Criar tabelas base
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -77,6 +78,12 @@ async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient_phone, delivered);
       CREATE INDEX IF NOT EXISTS idx_group_messages_group ON group_messages(group_id);
     `);
+
+    // Migração: adicionar colunas que podem faltar em tabelas existentes
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS identity_public_key TEXT`);
+
     console.log('✅ Base de dados inicializada/atualizada');
   } finally {
     client.release();
